@@ -1,0 +1,72 @@
+{
+  "builder_name": "json",
+  "citation": "",
+  "config_name": "default",
+  "dataset_name": "enron_spam",
+  "dataset_size": 102994547,
+  "description": "",
+  "download_checksums": {
+    "hf://datasets/SetFit/enron_spam@1916f66c89d52221ae33eb57d44498b4f3a5df22/train.jsonl": {
+      "num_bytes": 101069043,
+      "checksum": null
+    },
+    "hf://datasets/SetFit/enron_spam@1916f66c89d52221ae33eb57d44498b4f3a5df22/test.jsonl": {
+      "num_bytes": 6273613,
+      "checksum": null
+    }
+  },
+  "download_size": 107342656,
+  "features": {
+    "message_id": {
+      "dtype": "int64",
+      "_type": "Value"
+    },
+    "text": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "label": {
+      "dtype": "int64",
+      "_type": "Value"
+    },
+    "label_text": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "subject": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "message": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "date": {
+      "dtype": "timestamp[s]",
+      "_type": "Value"
+    }
+  },
+  "homepage": "",
+  "license": "",
+  "size_in_bytes": 210337203,
+  "splits": {
+    "train": {
+      "name": "train",
+      "num_bytes": 96980930,
+      "num_examples": 31716,
+      "dataset_name": "enron_spam"
+    },
+    "test": {
+      "name": "test",
+      "num_bytes": 6013617,
+      "num_examples": 2000,
+      "dataset_name": "enron_spam"
+    }
+  },
+  "version": {
+    "version_str": "0.0.0",
+    "major": 0,
+    "minor": 0,
+    "patch": 0
+  }
+}
