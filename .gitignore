@@ -214,5 +214,9 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
+# Downloaded and prepared Enron datasets
+private-lora-project/dataset/enron_spam/
+private-lora-project/dataset/enron_spam_qwen3/
+
 # Streamlit
 .streamlit/secrets.toml

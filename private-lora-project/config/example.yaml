@@ -1,15 +1,23 @@
-model_name_or_path: distilbert-base-uncased
+model_name_or_path: Qwen/Qwen3-14B
 dataset_path: dataset/enron_spam
+prepared_dataset_path: dataset/enron_spam_qwen3
 text_column: text
 label_column: label
-adapter: dp_lora
-output_dir: outputs/enron-dp-lora
+label_names: [ham, spam]
+validation_fraction: 0.05
+output_dir: outputs/enron-qwen3-14b-dp-lora
 num_train_epochs: 1
-per_device_train_batch_size: 8
-learning_rate: 0.0003
-max_length: 128
+expected_batch_size: 4
+learning_rate: 0.0002
+max_length: 1024
 rank: 8
 alpha: 16
+target_modules: [q_proj, v_proj]
 max_grad_norm: 1.0
 noise_multiplier: 1.1
+accountant_delta: 0.00001
+quant_type: nf4
+compute_dtype: bfloat16
+cpu_offload: true
+fsdp_world_size: 2
 seed: 42
