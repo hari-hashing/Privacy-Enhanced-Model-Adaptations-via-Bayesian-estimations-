@@ -1,0 +1,17 @@
+model_name_or_path: Qwen/Qwen3-1.7B
+prepared_dataset_path: dataset/winogrande_m_qwen3
+output_dir: outputs/winogrande-m-qwen3-1.7b-dp-lora
+num_train_epochs: 1
+expected_batch_size: 4
+learning_rate: 0.0002
+rank: 8
+alpha: 16
+target_modules: [q_proj, v_proj]
+max_grad_norm: 1.0
+noise_multiplier: 1.1
+accountant_delta: 0.00001
+quant_type: nf4
+compute_dtype: bfloat16
+cpu_offload: true
+fsdp_world_size: 2
+seed: 42

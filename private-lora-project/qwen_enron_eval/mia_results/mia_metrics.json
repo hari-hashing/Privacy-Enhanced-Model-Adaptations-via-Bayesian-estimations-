@@ -1,0 +1,18 @@
+{
+  "loss": {
+    "auc": 0.48529999999999995,
+    "tpr_at_1pct_fpr": 0.01
+  },
+  "min_k": {
+    "auc": 0.49328400000000006,
+    "tpr_at_1pct_fpr": 0.012
+  },
+  "zlib": {
+    "auc": 0.50385,
+    "tpr_at_1pct_fpr": 0.024
+  },
+  "label_loss": {
+    "auc": 0.496528,
+    "tpr_at_1pct_fpr": 0.012
+  }
+}

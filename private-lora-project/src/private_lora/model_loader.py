@@ -71,6 +71,14 @@ def load_qwen_model(
     elif adapter_path is not None:
         model = PeftModel.from_pretrained(model, adapter_path, is_trainable=False)
 
+    if trainable:
+        from bitsandbytes.nn import Params4bit
+
+        # FSDP requires uniform parameter dtypes within each flattened unit.
+        for parameter in model.parameters():
+            if not isinstance(parameter, Params4bit) and parameter.is_floating_point():
+                parameter.data = parameter.data.to(dtype=compute_dtype)
+
     model.config.use_cache = False
     return model, tokenizer
 

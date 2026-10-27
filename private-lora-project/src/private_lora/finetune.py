@@ -3,18 +3,24 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import math
 import os
 from pathlib import Path
 from typing import Any
 
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 import torch
 import torch.distributed as distributed
 import yaml
 from datasets import load_from_disk
 from opacus.accountants import RDPAccountant
+from torch.distributed.elastic.multiprocessing.errors import record
 from torch.distributed.fsdp import FullyShardedDataParallel
+from tqdm.auto import tqdm
 
 from .model_loader import load_qwen_model, wrap_fsdp
 
@@ -110,6 +116,7 @@ def save_adapter(
             tokenizer.save_pretrained(output_dir)
 
 
+@record
 def main() -> None:
     args = parse_args()
     config = yaml.safe_load(args.config.read_text())
@@ -141,10 +148,17 @@ def main() -> None:
         accountant = RDPAccountant()
         generator = torch.Generator(device="cpu")
         device = torch.device("cuda", torch.cuda.current_device())
+        loss_history: list[dict[str, float | int]] = []
 
         for epoch in range(int(config["num_train_epochs"])):
             generator.manual_seed(int(config["seed"]) + epoch)
-            for step in range(steps_per_epoch):
+            progress = tqdm(
+                range(steps_per_epoch),
+                desc=f"Epoch {epoch + 1}/{int(config['num_train_epochs'])}",
+                unit="step",
+                disable=rank != 0,
+            )
+            for step_index, _ in enumerate(progress, start=1):
                 indices = poisson_indices(len(dataset), sample_rate, generator)
                 records = [dataset[index] for index in indices]
                 loss = private_update(
@@ -160,14 +174,35 @@ def main() -> None:
                     noise_multiplier=float(config["noise_multiplier"]),
                     sample_rate=sample_rate,
                 )
-                if rank == 0 and (step + 1) % 25 == 0:
-                    print(f"epoch={epoch + 1} step={step + 1}/{steps_per_epoch} loss={loss}")
+                if rank == 0:
+                    progress.set_postfix(loss=f"{loss:.4f}" if loss is not None else "n/a")
+                    if loss is not None:
+                        loss_history.append(
+                            {
+                                "epoch": epoch + 1,
+                                "step": epoch * steps_per_epoch + step_index,
+                                "loss": loss,
+                            }
+                        )
 
         delta = float(config["accountant_delta"])
         epsilon = accountant.get_epsilon(delta=delta)
         output_dir = Path(config["output_dir"])
         save_adapter(model, tokenizer, output_dir, rank)
         if rank == 0:
+            with (output_dir / "training_history.csv").open("w", newline="") as history_file:
+                writer = csv.DictWriter(history_file, fieldnames=["epoch", "step", "loss"])
+                writer.writeheader()
+                writer.writerows(loss_history)
+            if loss_history:
+                steps = [int(row["step"]) for row in loss_history]
+                losses = [float(row["loss"]) for row in loss_history]
+                figure, axis = plt.subplots(figsize=(8, 4.5))
+                axis.plot(steps, losses)
+                axis.set(xlabel="Training step", ylabel="DP-SGD loss", title="Training loss")
+                figure.tight_layout()
+                figure.savefig(output_dir / "training_loss.png", dpi=150)
+                plt.close(figure)
             (output_dir / "privacy.json").write_text(
                 json.dumps(
                     {

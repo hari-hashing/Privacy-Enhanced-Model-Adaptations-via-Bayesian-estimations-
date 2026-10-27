@@ -1,11 +1,11 @@
-model_name_or_path: Qwen/Qwen3-14B
+model_name_or_path: Qwen/Qwen3-1.7B
 dataset_path: dataset/enron_spam
 prepared_dataset_path: dataset/enron_spam_qwen3
 text_column: text
 label_column: label
 label_names: [ham, spam]
 validation_fraction: 0.05
-output_dir: outputs/enron-qwen3-14b-dp-lora
+output_dir: outputs/enron-qwen3-1.7b-dp-lora
 num_train_epochs: 1
 expected_batch_size: 4
 learning_rate: 0.0002

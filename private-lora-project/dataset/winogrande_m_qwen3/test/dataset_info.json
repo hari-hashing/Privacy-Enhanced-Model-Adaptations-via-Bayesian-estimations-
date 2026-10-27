@@ -1,0 +1,72 @@
+{
+  "builder_name": "parquet",
+  "citation": "",
+  "config_name": "winogrande_m",
+  "dataset_name": "winogrande",
+  "dataset_size": 720801,
+  "description": "",
+  "download_size": 337379,
+  "features": {
+    "class_label": {
+      "dtype": "int64",
+      "_type": "Value"
+    },
+    "prompt_ids": {
+      "feature": {
+        "dtype": "int64",
+        "_type": "Value"
+      },
+      "_type": "List"
+    },
+    "input_ids": {
+      "feature": {
+        "dtype": "int32",
+        "_type": "Value"
+      },
+      "_type": "List"
+    },
+    "attention_mask": {
+      "feature": {
+        "dtype": "int8",
+        "_type": "Value"
+      },
+      "_type": "List"
+    },
+    "labels": {
+      "feature": {
+        "dtype": "int64",
+        "_type": "Value"
+      },
+      "_type": "List"
+    }
+  },
+  "homepage": "",
+  "license": "",
+  "size_in_bytes": 1058180,
+  "splits": {
+    "train": {
+      "name": "train",
+      "num_bytes": 328985,
+      "num_examples": 2558,
+      "dataset_name": "winogrande"
+    },
+    "test": {
+      "name": "test",
+      "num_bytes": 227633,
+      "num_examples": 1767,
+      "dataset_name": "winogrande"
+    },
+    "validation": {
+      "name": "validation",
+      "num_bytes": 164183,
+      "num_examples": 1267,
+      "dataset_name": "winogrande"
+    }
+  },
+  "version": {
+    "version_str": "0.0.0",
+    "major": 0,
+    "minor": 0,
+    "patch": 0
+  }
+}

@@ -218,5 +218,15 @@ __marimo__/
 private-lora-project/dataset/enron_spam/
 private-lora-project/dataset/enron_spam_qwen3/
 
+# Model weights and checkpoints
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+*.gguf
+pytorch_model*.bin
+model*.bin
+adapter_model.bin
+
 # Streamlit
 .streamlit/secrets.toml

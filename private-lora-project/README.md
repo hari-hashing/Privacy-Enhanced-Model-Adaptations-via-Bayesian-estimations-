@@ -33,6 +33,8 @@ Run from this project directory with exactly two visible GPUs:
 torchrun --standalone --nproc_per_node=2 -m private_lora.finetune --config config/example.yaml
 ```
 
+Rank 0 displays a `tqdm` progress bar for each epoch with the current step, elapsed time, ETA, and latest loss.
+
 Each FSDP rank loads a quantized model shard and processes the same Poisson-sampled email indices. This is deliberate: the ranks shard model parameters, not examples, so per-email gradient norms can be combined across parameter shards before clipping. This makes DP accumulation substantially slower than ordinary LoRA training. The sampler/accountant use `expected_batch_size / training_set_size` as the Poisson sampling rate.
 
 ## Evaluate
@@ -45,9 +47,34 @@ private-lora-evaluate --config config/example.yaml --adapter outputs/enron-qwen3
 
 The evaluator loads the same 4-bit base model and the saved adapter, then prints accuracy, precision, recall, and F1.
 
+For ROC/AUC plots and per-email spam scores, run the standalone evaluator against
+the prepared Arrow dataset and the adapter directory:
+
+```bash
+python qwen_enron_eval/eval.py \
+  --adapter_path outputs/enron-qwen3-1.7b-dp-lora \
+  --data_dir dataset/enron_spam_qwen3
+```
+
+`--data_dir` can also point directly to the prepared `test` split directory.
+The evaluator attaches the adapter to the base model recorded in its PEFT
+configuration and saves metrics, predictions, and plots under `eval_results/`.
+
+Run the membership-inference attack against the prepared dataset used for
+training. It scores the saved prompt and label-completion tokens:
+
+```bash
+python qwen_enron_eval/MIA.py \
+  --model_path outputs/enron-qwen3-1.7b-dp-lora \
+  --data_dir dataset/enron_spam_qwen3
+```
+
+MIA also accepts the raw source dataset (`dataset/enron_spam`) or flat
+`train.*` / `test.*` files containing email text and labels. Results are
+written under `mia_results/`.
+
 ## Hardware and privacy notes
 
-FSDP wraps the Qwen3 decoder layers with `use_orig_params=True` and CPU parameter offload. NF4 uses BF16 quantization storage for FSDP compatibility. `device_map=auto` is intentionally not used because it conflicts with FSDP ownership. The model must fit at least its active FSDP shard and activations on each GPU; CPU offload does not eliminate activation memory. Email-level clipping protects each sampled training email, but does not by itself protect against data already exposed in downloaded/prepared files or logs. The reported epsilon is an accounting estimate, not a guarantee independent of the configured sampling and adjacency assumptions.
+FSDP wraps the Qwen3 decoder layers with `use_orig_params=True` and CPU parameter offload. NF4 uses BF16 quantization storage for FSDP compatibility; ordinary floating-point parameters, including LoRA adapters, are cast to the configured compute dtype before wrapping so each FSDP flat parameter has a uniform dtype. The packed 4-bit weights are left unchanged. DP-SGD gradient accumulation and noise addition use FP32. `device_map=auto` is intentionally not used because it conflicts with FSDP ownership. The model must fit at least its active FSDP shard and activations on each GPU; CPU offload does not eliminate activation memory. Email-level clipping protects each sampled training email, but does not by itself protect against data already exposed in downloaded/prepared files or logs. The reported epsilon is an accounting estimate, not a guarantee independent of the configured sampling and adjacency assumptions.
 
 The current model loader requires CUDA, two available GPUs, and `bitsandbytes`; the training process raises a clear error when those prerequisites or the expected FSDP world size are missing.
-
